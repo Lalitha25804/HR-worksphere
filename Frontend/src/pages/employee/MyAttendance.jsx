@@ -144,48 +144,6 @@ const MyAttendance = () => {
         </div>
       </div>
 
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl text-white">
-        <h3 className="text-lg font-semibold mb-4">Today's Check-In / Check-Out</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-white/60 mb-2">Check-In</p>
-            <p className="text-lg font-semibold text-teal-300 mb-3">
-              {todayRecord?.checkIn ? formatTime(todayRecord.checkIn) : "Not checked in"}
-            </p>
-            <button
-              onClick={handleCheckIn}
-              disabled={isTodayCheckedIn || isLoading}
-              className={`w-full py-2 px-4 rounded-lg font-semibold transition ${
-                isTodayCheckedIn || isLoading
-                  ? "bg-white/10 text-white/50 cursor-not-allowed"
-                  : "bg-teal-500 hover:bg-teal-600 text-white"
-              }`}
-            >
-              <Clock size={18} />
-              Check In
-            </button>
-          </div>
-
-          <div>
-            <p className="text-sm text-white/60 mb-2">Check-Out</p>
-            <p className="text-lg font-semibold text-red-300 mb-3">
-              {todayRecord?.checkOut ? formatTime(todayRecord.checkOut) : "Not checked out"}
-            </p>
-            <button
-              onClick={handleCheckOut}
-              disabled={!isTodayCheckedIn || isTodayCheckedOut || isLoading}
-              className={`w-full py-2 px-4 rounded-lg font-semibold transition ${
-                !isTodayCheckedIn || isTodayCheckedOut || isLoading
-                  ? "bg-white/10 text-white/50 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-600 text-white"
-              }`}
-            >
-              <LogOut size={18} />
-              Check Out
-            </button>
-          </div>
-        </div>
-      </div>
 
       <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl text-white">
         <div className="flex justify-between items-center mb-6">

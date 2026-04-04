@@ -4,7 +4,21 @@ const Settings = require("../models/Settings");
 // 🔥 CHECK-IN
 exports.checkIn = async (req, res) => {
   try {
-    const employeeId = req.user.id;
+    let employeeId = req.user.id;
+
+    if (req.body.targetEmployeeId) {
+       if (req.user.role === "HR") {
+           employeeId = req.body.targetEmployeeId;
+       } else if (req.user.role === "Manager") {
+           const Employee = require("../models/Employee");
+           const target = await Employee.findById(req.body.targetEmployeeId);
+           if (!target || target.managerId?.toString() !== req.user.id.toString()) {
+               return res.status(403).json({ error: "Access Denied: You can only mark attendance for your own team members." });
+           }
+           employeeId = req.body.targetEmployeeId;
+       }
+    }
+
     const today = new Date().toISOString().split("T")[0];
 
     // ❌ Already checked in
@@ -80,7 +94,21 @@ exports.checkIn = async (req, res) => {
 // 🔥 CHECK-OUT (WITH HOURS)
 exports.checkOut = async (req, res) => {
   try {
-    const employeeId = req.user.id;
+    let employeeId = req.user.id;
+
+    if (req.body.targetEmployeeId) {
+       if (req.user.role === "HR") {
+           employeeId = req.body.targetEmployeeId;
+       } else if (req.user.role === "Manager") {
+           const Employee = require("../models/Employee");
+           const target = await Employee.findById(req.body.targetEmployeeId);
+           if (!target || target.managerId?.toString() !== req.user.id.toString()) {
+               return res.status(403).json({ error: "Access Denied: You can only check out your own team members." });
+           }
+           employeeId = req.body.targetEmployeeId;
+       }
+    }
+
     const today = new Date().toISOString().split("T")[0];
 
     const attendance = await Attendance.findOne({ employeeId, date: today });
@@ -154,7 +182,20 @@ exports.getAttendance = async (req, res) => {
 // 🔥 GET MY ATTENDANCE (Employee)
 exports.getMyAttendance = async (req, res) => {
   try {
-    const employeeId = req.user.id;
+    let employeeId = req.user.id;
+    
+    if (req.query.targetEmployeeId) {
+       if (req.user.role === "HR") {
+           employeeId = req.query.targetEmployeeId;
+       } else if (req.user.role === "Manager") {
+           const Employee = require("../models/Employee");
+           const target = await Employee.findById(req.query.targetEmployeeId);
+           if (!target || target.managerId?.toString() !== req.user.id.toString()) {
+               return res.status(403).json({ error: "Access Denied" });
+           }
+           employeeId = req.query.targetEmployeeId;
+       }
+    }
 
     const data = await Attendance.find({ employeeId })
       .sort({ createdAt: -1 });

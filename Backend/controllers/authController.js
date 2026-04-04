@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { sendWelcomeEmail } = require("../utils/mailer");
 
 // 🔥 REGISTER (HR ONLY)
 exports.register = async (req, res) => {
@@ -62,6 +63,9 @@ exports.createManager = async (req, res) => {
       role: "Manager"
     });
 
+    // Send Welcome Email
+    await sendWelcomeEmail(email, user.name, "Manager", password);
+
     res.json({
       message: "Manager created successfully",
       user: {
@@ -100,6 +104,9 @@ exports.createEmployeeUser = async (req, res) => {
       password: hashedPassword,
       role: "Employee"
     });
+
+    // Send Welcome Email
+    await sendWelcomeEmail(email, user.name, "Employee", password);
 
     res.json({
       message: "Employee user created successfully",

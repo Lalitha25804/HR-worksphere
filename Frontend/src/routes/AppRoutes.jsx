@@ -20,6 +20,7 @@ import AddManager from "../pages/hr/AddManager";
 import GeneratePayroll from "../pages/hr/GeneratePayroll";
 import ViewCredentials from "../pages/hr/ViewCredentials";
 import ImportData from "../pages/hr/ImportData";
+import MarkManagerAttendance from "../pages/hr/MarkManagerAttendance";
 
 import Employees from "../pages/dashboard/Employees";
 import Attendance from "../pages/dashboard/Attendance";
@@ -40,6 +41,7 @@ import TeamAttendance from "../pages/managerdashboard/ManagerAttendance";
 import ManagerShifts from "../pages/managerdashboard/ManagerShifts";
 import ManagerPayroll from "../pages/managerdashboard/ManagerPayroll";
 
+import MarkTeamAttendance from "../pages/managerdashboard/MarkTeamAttendance";
 import ManagerSettings from "../pages/managerdashboard/ManagerSettings";
 import ManagerAssignShift from "../pages/managerdashboard/ManagerAssignShift";
 import GenerateReport from "../pages/managerdashboard/GenerateReport";
@@ -77,6 +79,7 @@ const AppRoutes = () => {
 
         <Route path="employees" element={<Employees />} />
         <Route path="attendance" element={<Attendance />} />
+        <Route path="mark-manager-attendance" element={<MarkManagerAttendance />} />
         <Route path="leave-requests" element={<LeaveRequests />} />
         <Route path="payroll" element={<Payroll />} />
         <Route path="shifts" element={<Shifts />} />
@@ -105,9 +108,11 @@ const AppRoutes = () => {
         <Route index element={<MyTeam />} />
 
         <Route path="team" element={<MyTeam />} />
+        <Route path="my-attendance" element={<MarkTeamAttendance />} />
         <Route path="attendance" element={<TeamAttendance />} />
         <Route path="shift" element={<ManagerShifts />} />
         <Route path="payroll" element={<ManagerPayroll />} />
+        <Route path="leave" element={<LeaveRequest />} />
 
         <Route path="assign-shift" element={<ManagerAssignShift />} />
         <Route path="generate-report" element={<GenerateReport />} />

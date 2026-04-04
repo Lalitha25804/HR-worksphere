@@ -9,13 +9,16 @@ import {
   CreditCard
 } from "lucide-react";
 
-const EmployeeSidebar = () => {
+const EmployeeSidebar = ({ open }) => {
   return (
-    <aside className="
-      w-64 min-h-screen p-6 text-white
+    <aside className={`
+      fixed top-0 left-0 z-50
+      h-screen w-64 p-6 text-white
       bg-white/5 backdrop-blur-xl border-r border-white/20
       shadow-[0_0_30px_rgba(0,0,0,0.3)]
-    ">
+      transform transition-all duration-300 ease-in-out
+      ${open ? "translate-x-0" : "-translate-x-full"}
+    `}>
 
       <h2 className="text-xl font-semibold mb-8 tracking-wide">
         Employee Panel

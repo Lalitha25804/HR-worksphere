@@ -46,9 +46,21 @@ const ManagerSidebar = ({ open }) => {
         />
 
         <NavItem
+          to="/manager-dashboard/my-attendance"
+          icon={<Clock size={18} />}
+          label="Mark Attendance"
+        />
+
+        <NavItem
           to="/manager-dashboard/attendance"
           icon={<Clock size={18} />}
-          label="Attendance"
+          label="Team Attendance"
+        />
+
+        <NavItem
+          to="/manager-dashboard/leave"
+          icon={<Calendar size={18} />}
+          label="Apply Leave"
         />
 
         <NavItem

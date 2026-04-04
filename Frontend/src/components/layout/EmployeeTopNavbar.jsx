@@ -1,4 +1,4 @@
-import { Bell, Search, UserCircle, LogOut } from "lucide-react";
+import { Bell, Search, UserCircle, LogOut, Menu } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 // APIs
 import { getMyNotificationsAPI, markNotificationsReadAPI } from "../../api/notificationApi";
 
-const EmployeeTopNavbar = () => {
+const EmployeeTopNavbar = ({ toggleSidebar, open }) => {
 
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -59,8 +59,20 @@ const EmployeeTopNavbar = () => {
       px-4 py-3 rounded-2xl mb-6 text-white relative z-40
     ">
 
-      {/* SEARCH SYSTEM */}
-      <div className="relative">
+      {/* LEFT SECTION (Menu + Search) */}
+      <div className="flex items-center gap-4">
+        
+        <button
+          onClick={toggleSidebar}
+          className={`
+            p-2 rounded-xl border border-white/20 transition
+            ${open ? "bg-white/20" : "bg-white/10 hover:bg-white/20"}
+          `}
+        >
+          <Menu size={20} />
+        </button>
+
+        <div className="relative hidden md:block">
           <div className="
             flex items-center bg-white/10 border border-white/20
             px-3 py-2 rounded-xl w-72 focus-within:ring-2 focus-within:ring-teal-400/40 relative z-50
@@ -89,6 +101,7 @@ const EmployeeTopNavbar = () => {
                  )}
              </div>
           )}
+        </div>
       </div>
 
       {/* RIGHT NAVIGATION COMPONENT */}

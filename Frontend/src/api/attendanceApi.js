@@ -1,10 +1,10 @@
 import API from "./axios";
 
-export const checkInAPI = () => API.post("/attendance/checkin");
-export const checkOutAPI = () => API.post("/attendance/checkout");
+export const checkInAPI = (data = {}) => API.post("/attendance/checkin", data);
+export const checkOutAPI = (data = {}) => API.post("/attendance/checkout", data);
 
-export const getMyAttendanceAPI = () =>
-  API.get("/attendance/me");
+export const getMyAttendanceAPI = (params = {}) =>
+  API.get("/attendance/me", { params });
 
 export const getAllAttendanceAPI = () =>
   API.get("/attendance");

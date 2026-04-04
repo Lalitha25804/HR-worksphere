@@ -5,6 +5,7 @@ const menuItems = [
   { name: "Dashboard", icon: "📊", path: "/hr-dashboard", end: true },
   { name: "Employees", icon: "👥", path: "/hr-dashboard/employees" },
   { name: "Attendance", icon: "🕒", path: "/hr-dashboard/attendance" },
+  { name: "Mark Manager Attendance", icon: "⏰", path: "/hr-dashboard/mark-manager-attendance" },
   { name: "Leave Requests", icon: "📅", path: "/hr-dashboard/leave-requests" },
   { name: "Payroll", icon: "💰", path: "/hr-dashboard/payroll" },
   { name: "Payroll History", icon: "📜", path: "/hr-dashboard/payroll-history" },

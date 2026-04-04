@@ -11,9 +11,9 @@ const {
 const auth = require("../middleware/authMiddleware");
 const role = require("../middleware/roleMiddleware");
 
-// 🔥 EMPLOYEE
-router.post("/apply", auth, role("Employee"), applyLeave);
-router.get("/me", auth, role("Employee"), getMyLeaves);
+// 🔥 EMPLOYEE + MANAGER (Personal Scope)
+router.post("/apply", auth, role("Employee", "Manager"), applyLeave);
+router.get("/me", auth, role("Employee", "Manager"), getMyLeaves);
 
 // 🔥 HR + MANAGER
 router.get("/", auth, role("HR", "Manager"), getAllLeaves);

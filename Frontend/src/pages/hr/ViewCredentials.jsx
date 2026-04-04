@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { getEmployeesAPI } from "../../api/employeesApi";
+import { getEmployeesAPI, updateEmployeeAPI } from "../../api/employeesApi";
 
 const ViewCredentials = () => {
   const [employees, setEmployees] = useState([]);
@@ -36,6 +36,28 @@ const ViewCredentials = () => {
     
     return matchesSearch && matchesRole;
   });
+
+  const handleBlock = async (emp) => {
+    try {
+      setLoading(true);
+      const payload = {
+        name: emp.name,
+        email: emp.email,
+        dept: emp.dept,
+        role: emp.role,
+        baseSalary: emp.baseSalary,
+        pfPercentage: emp.pfPercentage,
+        taxPercentage: emp.taxPercentage,
+        managerId: emp.managerId?._id || emp.managerId || null,
+        isActive: emp.isActive === false ? true : false
+      };
+      await updateEmployeeAPI(emp._id, payload);
+      await fetchEmployees();
+    } catch (err) {
+      alert("Failed to update status. Please ensure all data is intact.");
+      setLoading(false);
+    }
+  };
 
   const downloadAsCSV = () => {
     let csv = "Employee ID,Name,Email,Role,Login Link,Username,Password\n";
@@ -108,7 +130,7 @@ const ViewCredentials = () => {
                 <th className="px-4 py-3 text-left">Role</th>
                 <th className="px-4 py-3 text-left">Login Link</th>
                 <th className="px-4 py-3 text-left">Username</th>
-                <th className="px-4 py-3 text-left">Instructions</th>
+                <th className="px-4 py-3 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -135,8 +157,17 @@ const ViewCredentials = () => {
                       {emp.role === "Employee" ? "/employee-login" : "/manager-login"}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">{emp.email}</td>
-                    <td className="px-4 py-3 text-xs text-orange-300">
-                      Share password via secure channel
+                    <td className="px-4 py-3 text-xs">
+                      <button
+                        onClick={() => handleBlock(emp)}
+                        className={`px-3 py-1 rounded transition text-xs font-semibold ${
+                          emp.isActive === false
+                            ? "bg-stone-500/30 text-stone-300 hover:bg-stone-500/50"
+                            : "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                        }`}
+                      >
+                        {emp.isActive === false ? "Unblock" : "Block"}
+                      </button>
                     </td>
                   </motion.tr>
                 ))

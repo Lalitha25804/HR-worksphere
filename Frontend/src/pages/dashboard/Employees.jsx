@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { attendanceLogs } from "../../data/attendanceLogs";
-import { getEmployeesAPI } from "../../api/employeesApi";
+import { getEmployeesAPI, updateEmployeeAPI } from "../../api/employeesApi";
 
 const Employees = () => {
 
@@ -23,30 +23,61 @@ const Employees = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const employeesPerPage = 4;
 
-  // Fetch employees from backend
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        setLoading(true);
-        const { data } = await getEmployeesAPI();
-        const withAvatars = data.map((emp, idx) => ({
-          ...emp,
-          id: emp._id,
-          salary: emp.baseSalary,
-          avatar: `https://i.pravatar.cc/40?img=${idx % 10}`
-        }));
-        setEmployees(withAvatars);
-        setError(null);
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || "Failed to fetch employees");
-        setEmployees([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    name: "", email: "", dept: "", role: "Employee", baseSalary: 0, pfPercentage: 12, taxPercentage: 10, isActive: true
+  });
 
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      const { data } = await getEmployeesAPI();
+      const withAvatars = data.map((emp, idx) => ({
+        ...emp,
+        id: emp._id,
+        salary: emp.baseSalary,
+        avatar: `https://i.pravatar.cc/40?img=${idx % 10}`
+      }));
+      setEmployees(withAvatars);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || "Failed to fetch employees");
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEmployees();
   }, []);
+
+  const openEditModal = (emp) => {
+    setEditingId(emp._id);
+    setEditFormData({
+      name: emp.name,
+      email: emp.email,
+      dept: emp.dept,
+      role: emp.role,
+      baseSalary: emp.salary, // from logic above, emp.salary is mapped to baseSalary
+      pfPercentage: emp.pfPercentage || 12,
+      taxPercentage: emp.taxPercentage || 10,
+      isActive: emp.isActive !== undefined ? emp.isActive : true
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateEmployeeAPI(editingId, editFormData);
+      await fetchEmployees();
+      setIsEditModalOpen(false);
+    } catch (err) {
+      alert("Failed to update employee.");
+    }
+  };
 
   /* SEARCH FROM URL */
 
@@ -329,6 +360,7 @@ const Employees = () => {
                 <th className="text-center">Allowance</th>
                 <th className="text-center">OT ₹</th>
                 <th className="text-center">Net</th>
+                <th className="text-center">Actions</th>
 
               </tr>
             </thead>
@@ -392,6 +424,15 @@ const Employees = () => {
                       ₹{s.payroll.toLocaleString()}
                     </td>
 
+                    <td className="text-center">
+                      <button
+                        onClick={() => openEditModal(emp)}
+                        className="px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded hover:bg-indigo-500/30 transition text-xs font-semibold"
+                      >
+                        Edit
+                      </button>
+                    </td>
+
                   </tr>
 
                 );
@@ -426,6 +467,85 @@ const Employees = () => {
       </div>
 
         </>
+      )}
+
+      {/* EDIT MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-slate-900 border border-white/20 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
+            <h3 className="text-xl font-bold mb-4 text-white">Edit Employee</h3>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Full Name</label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Email</label>
+                <input
+                  type="email"
+                  value={editFormData.email}
+                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2">
+                  <label className="text-xs text-white/60 mb-1 block">Department</label>
+                  <input
+                    type="text"
+                    value={editFormData.dept}
+                    onChange={(e) => setEditFormData({ ...editFormData, dept: e.target.value })}
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none"
+                    required
+                  />
+                </div>
+                <div className="w-1/2">
+                  <label className="text-xs text-white/60 mb-1 block">Role</label>
+                  <select
+                    value={editFormData.role}
+                    onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none text-white"
+                  >
+                    <option className="text-black">Employee</option>
+                    <option className="text-black">Manager</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-white/60 mb-1 block">Base Salary (₹)</label>
+                <input
+                  type="number"
+                  value={editFormData.baseSalary}
+                  onChange={(e) => setEditFormData({ ...editFormData, baseSalary: Number(e.target.value) })}
+                  className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 rounded bg-white/10 hover:bg-white/20 transition text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 transition text-sm font-semibold"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>
