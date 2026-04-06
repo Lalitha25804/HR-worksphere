@@ -277,8 +277,11 @@ const AddEmployee = () => {
             className="p-3 rounded-lg bg-white/10 border border-white/20 text-white focus:ring-2 focus:ring-indigo-500"
           >
             <option value="" className="text-black">Select Department</option>
-            <option className="text-black">HR</option>
+            <option className="text-black">Development</option>
+            <option className="text-black">Testing</option>
             <option className="text-black">Engineering</option>
+            <option className="text-black">Design</option>
+            <option className="text-black">Product Management</option>
             <option className="text-black">Marketing</option>
             <option className="text-black">Sales</option>
           </select>

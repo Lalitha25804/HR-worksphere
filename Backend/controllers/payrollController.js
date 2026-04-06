@@ -6,7 +6,11 @@ const Settings = require("../models/Settings");
 // 🔥 GET PAYROLL
 exports.getPayroll = async (req, res) => {
   try {
-    const { employeeId } = req.params;
+    let { employeeId } = req.params;
+    
+    if (employeeId === "me") {
+        employeeId = req.user.id; // Correct Employee._id mapped by authMiddleware
+    }
     const { month, year } = req.query;
 
     if (!month || !year) {

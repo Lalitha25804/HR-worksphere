@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getPayrollAPI } from "../../api/payrollApi";
+import { getMyPayrollAPI } from "../../api/payrollApi";
 import { ListFilter, Download, Landmark, BadgeCheck } from "lucide-react";
 
 const currentYear = new Date().getFullYear();
@@ -13,23 +13,14 @@ const EmployeePayroll = () => {
   const [filterMonth, setFilterMonth] = useState(currentMonth.toString().padStart(2, "0"));
   const [filterYear, setFilterYear] = useState(currentYear.toString());
 
-  // Extrapolate Employee Context
-  const profile = JSON.parse(localStorage.getItem("user")) || {};
-  const employeeId = profile.id;
-
   const [sessionError, setSessionError] = useState(false);
 
   useEffect(() => {
-    if (!employeeId) {
-        setLoading(false);
-        setSessionError(true);
-        return;
-    }
 
     const fetchPayroll = async () => {
       setLoading(true);
       try {
-        const res = await getPayrollAPI(employeeId, filterMonth, filterYear);
+        const res = await getMyPayrollAPI(filterMonth, filterYear);
         setPayrollData(res.data);
       } catch (err) {
         console.error("Payroll API failed:", err);
@@ -39,7 +30,7 @@ const EmployeePayroll = () => {
       }
     };
     fetchPayroll();
-  }, [employeeId, filterMonth, filterYear]);
+  }, [filterMonth, filterYear]);
 
   // Download Handler (Visual Demo)
   const handleDownload = () => {
