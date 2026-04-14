@@ -165,9 +165,14 @@ const MyAttendance = () => {
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
               className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white outline-none"
             >
-              {months.map((month, idx) => (
-                <option key={month} value={idx}>{month}</option>
-              ))}
+              {months.map((month, idx) => {
+                const isDisabled = (selectedYear === new Date().getFullYear() && idx > new Date().getMonth());
+                return (
+                  <option key={month} value={idx} disabled={isDisabled}>
+                    {month}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div>
@@ -177,7 +182,7 @@ const MyAttendance = () => {
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               className="bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white outline-none"
             >
-              {years.map((year) => (
+              {years.filter(year => year <= new Date().getFullYear()).map((year) => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>

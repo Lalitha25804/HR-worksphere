@@ -71,7 +71,8 @@ const EmployeePayroll = () => {
              >
                 {Array.from({length: 12}, (_, i) => {
                     const m = (i + 1).toString().padStart(2, "0");
-                    return <option key={m} value={m}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+                    const isDisabled = (Number(filterYear) === currentYear && (i + 1) > currentMonth);
+                    return <option key={m} value={m} disabled={isDisabled}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
                 })}
              </select>
 
@@ -121,7 +122,9 @@ const EmployeePayroll = () => {
                 </div>
              </div>
              {loading ? <span className="text-sky-300/80 italic text-2xl mt-4 animate-pulse">Evaluating...</span> : (
-                 <p className="text-3xl font-bold text-white mt-4 tracking-tight uppercase tracking-widest">{payrollData ? "Pending" : "Inactive"}</p>
+                 <p className="text-3xl font-bold text-white mt-4 tracking-tight uppercase tracking-widest">
+                    {payrollData ? (payrollData.status || "UNKNOWN") : (sessionError || "INACTIVE - API ERROR")}
+                 </p>
              )}
          </div>
       </div>

@@ -12,7 +12,8 @@ const leaveRoutes = require("./routes/leave");
 const authRoutes = require("./routes/auth");
 const settingsRoutes = require("./routes/settings");
 const notificationRoutes = require("./routes/notifications");
-
+const uploadRoutes = require("./routes/upload");
+const path = require("path");
 
 
 const app = express();
@@ -23,6 +24,7 @@ connectDB();
 // MIDDLEWARE
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // TEST
 app.get("/", (req, res) => {
@@ -37,6 +39,7 @@ app.use("/payroll", payrollRoutes);
 app.use("/leave", leaveRoutes);
 app.use("/settings", settingsRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/upload", uploadRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { getEmployeesAPI } from "../../api/employeesApi";
-import { getPayrollAPI } from "../../api/payrollApi";
+import { getPayrollAPI, processPayrollAPI } from "../../api/payrollApi";
 
 const Payroll = () => {
   const currentDate = new Date();
@@ -17,9 +17,6 @@ const Payroll = () => {
   const [employees, setEmployees] = useState([]);
   const [payrollCache, setPayrollCache] = useState({});
   const [loading, setLoading] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
 
   /* ---------------- FETCH DATA ---------------- */
   useEffect(() => {
@@ -85,10 +82,7 @@ const Payroll = () => {
     );
   });
 
-  /* ---------------- PAGINATION ---------------- */
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentRows = filteredEmployees.slice(indexOfFirst, indexOfLast);
+  const currentRows = filteredEmployees;
 
   /* ---------------- TOTALS ---------------- */
   const totalPayroll = filteredEmployees.reduce((sum, e) => {
@@ -121,14 +115,31 @@ const Payroll = () => {
       : setSelectedEmployees(currentRows.map(e => e._id));
   };
 
-  const generatePayrollForSelected = () => {
+  const generatePayrollForSelected = async () => {
     if(selectedEmployees.length === 0){
       alert("Select employees first");
       return;
     }
 
-    setProcessedPayroll(prev => [...new Set([...prev, ...selectedEmployees])]);
-    alert("Payroll Processing Complete!");
+    const payload = selectedEmployees.map(id => {
+       const [yearStr, monthStr] = month.split("-");
+       return {
+          employeeId: id,
+          month: monthStr,
+          year: yearStr,
+          ...payrollCache[id]
+       };
+    });
+
+    try {
+      await processPayrollAPI(payload);
+      setProcessedPayroll(prev => [...new Set([...prev, ...selectedEmployees])]);
+      fetchEmployeesAndPayroll();
+      alert("Payroll Processing Complete!");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to process payroll");
+    }
   };
 
   /* ---------------- PAYSLIP ---------------- */
@@ -194,6 +205,7 @@ const Payroll = () => {
       {/* CONTROLS */}
       <div className="flex gap-4 flex-wrap">
         <input type="month" value={month}
+          max={defaultMonth}
           onChange={(e)=>setMonth(e.target.value)}
           className="px-3 py-2 bg-white/10 border border-white/20 rounded outline-none"/>
 
@@ -279,7 +291,7 @@ const Payroll = () => {
                           <td className="text-red-400 text-center py-3">-₹{s.deduction || 0}</td>
                           <td className="text-green-400 text-center font-bold text-base">₹{(s.salary || 0).toLocaleString()}</td>
                           <td className="text-center py-3">
-                            {processedPayroll.includes(emp._id)
+                            {s.status === 'Processed'
                               ? <span className="bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-xs font-semibold">Processed</span>
                               : <span className="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full text-xs font-semibold">Pending</span>}
                           </td>

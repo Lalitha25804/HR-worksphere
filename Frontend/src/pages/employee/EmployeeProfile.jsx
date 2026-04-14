@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getMeAPI, updateProfileAPI } from "../../api/authApi";
+import { uploadImageAPI } from "../../api/employeesApi";
 
 const EmployeeProfile = () => {
   const [isEdit, setIsEdit] = useState(false);
@@ -11,8 +12,11 @@ const EmployeeProfile = () => {
     address: "",
     department: "",
     role: "Employee",
+    role: "Employee",
     joinedDate: "2026-03-01",
+    profileImage: "",
   });
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -25,7 +29,9 @@ const EmployeeProfile = () => {
           address: data.address || "",
           department: data.dept || "",
           role: data.role || "Employee",
-          joinedDate: data.createdAt ? data.createdAt.split("T")[0] : "2026-03-01"
+          role: data.role || "Employee",
+          joinedDate: data.createdAt ? data.createdAt.split("T")[0] : "2026-03-01",
+          profileImage: data.profileImage || "",
         });
       } catch (err) {
         console.error("Failed to fetch Employee Profile:", err);
@@ -36,12 +42,23 @@ const EmployeeProfile = () => {
 
   const handleSave = async () => {
     try {
-      await updateProfileAPI({ name: profile.name, phone: profile.phone, address: profile.address });
+      let imageUrl = profile.profileImage;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("image", selectedFile);
+        const { data } = await uploadImageAPI(formData);
+        imageUrl = data.imageUrl;
+      }
+
+      await updateProfileAPI({ name: profile.name, phone: profile.phone, address: profile.address, profileImage: imageUrl });
       setIsEdit(false);
+      setProfile((prev) => ({ ...prev, profileImage: imageUrl }));
+      setSelectedFile(null);
       
       const user = JSON.parse(localStorage.getItem("user"));
       if (user) {
          user.name = profile.name;
+         user.profileImage = imageUrl;
          localStorage.setItem("user", JSON.stringify(user));
          window.dispatchEvent(new Event("auth-update"));
       }
@@ -58,6 +75,12 @@ const EmployeeProfile = () => {
     });
   };
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   return (
     <div className="p-6 text-white space-y-6">
       <h2 className="text-2xl font-semibold">Employee Profile</h2>
@@ -67,14 +90,23 @@ const EmployeeProfile = () => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 max-w-xl"
       >
-        <div className="flex items-center gap-4 mb-6">
-          <img
-            src="https://i.pravatar.cc/80"
-            className="w-16 h-16 rounded-full border border-white/20"
-          />
+        <div className="flex items-center gap-6 mb-6">
+          <div className="relative group">
+            <img
+              src={selectedFile ? URL.createObjectURL(selectedFile) : (profile.profileImage ? `http://localhost:5000${profile.profileImage}` : `https://ui-avatars.com/api/?name=${profile.name}&background=random`)}
+              className="w-20 h-20 rounded-full border-2 border-white/20 object-cover"
+              alt="Profile"
+            />
+            {isEdit && (
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                Change
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+              </label>
+            )}
+          </div>
           <div>
-            <p className="text-lg font-semibold">{profile.name}</p>
-            <p className="text-white/60 text-sm">{profile.role}</p>
+            <p className="text-xl font-bold">{profile.name}</p>
+            <p className="text-white/60">{profile.role}</p>
           </div>
         </div>
 

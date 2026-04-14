@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getMyAttendanceAPI } from "../../api/attendanceApi";
 import { getMyLeavesAPI } from "../../api/leaveApi";
-import { getPayrollAPI } from "../../api/payrollApi";
+import { getMyPayrollAPI } from "../../api/payrollApi";
 
 const EmployeeSummaryCards = () => {
   const [payroll, setPayroll] = useState("--");
@@ -24,7 +24,7 @@ const EmployeeSummaryCards = () => {
         const [attRes, leaveRes, payRes] = await Promise.all([
            getMyAttendanceAPI(),
            getMyLeavesAPI(),
-           getPayrollAPI(employeeId, currentMonth, currentYear).catch(() => ({ data: { salary: 0 } }))
+           getMyPayrollAPI(currentMonth, currentYear).catch(() => ({ data: { salary: 0 } }))
         ]);
 
         const logs = attRes.data || [];

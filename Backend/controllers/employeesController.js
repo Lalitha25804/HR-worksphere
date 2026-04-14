@@ -46,9 +46,16 @@ exports.addEmployee = async (req, res) => {
 // 🔥 BULK CREATE EMPLOYEES
 exports.bulkAddEmployees = async (req, res) => {
   try {
-    const employeesData = req.body;
+    let employeesData = req.body;
+    let fileInfo = null;
+
+    if (req.body && req.body.employeesData) {
+      employeesData = req.body.employeesData;
+      fileInfo = req.body.fileInfo;
+    }
     
-    if (!Array.isArray(employeesData) || employeesData.length === 0) {
+    // Only fail if there is NO file AND NO data. If there is a file, we can save it to history even with 0 employees.
+    if ((!Array.isArray(employeesData) || employeesData.length === 0) && !fileInfo) {
       return res.status(400).json({ error: "Invalid or empty data provided" });
     }
 
@@ -94,6 +101,18 @@ exports.bulkAddEmployees = async (req, res) => {
     if (validEmployees.length > 0) {
       await Employee.insertMany(validEmployees);
       successCount = validEmployees.length;
+    }
+
+    if (fileInfo && fileInfo.fileName && fileInfo.fileUrl) {
+      const ImportHistory = require("../models/ImportHistory");
+      await ImportHistory.create({
+        fileName: fileInfo.fileName,
+        fileUrl: fileInfo.fileUrl,
+        fileSize: fileInfo.size || 0,
+        recordsProcessed: successCount,
+        failedRecords: failedCount,
+        status: failedCount > 0 ? (successCount > 0 ? "Partial" : "Failed") : "Success"
+      });
     }
 
     res.status(201).json({
@@ -156,7 +175,7 @@ exports.getEmployeeById = async (req, res) => {
 // 🔥 UPDATE EMPLOYEE
 exports.updateEmployee = async (req, res) => {
   try {
-    const { name, email, dept, role, baseSalary, pfPercentage, taxPercentage, managerId, isActive } = req.body;
+    const { name, email, dept, role, baseSalary, pfPercentage, taxPercentage, managerId, isActive, profileImage } = req.body;
 
     // ✅ Validation
     if (!name || !email || !dept || !role || !baseSalary) {
@@ -166,6 +185,9 @@ exports.updateEmployee = async (req, res) => {
     }
 
     const updatePayload = { name, email, dept, role, baseSalary, pfPercentage, taxPercentage, managerId: role === "Employee" ? (managerId || null) : null };
+    if (profileImage !== undefined) {
+      updatePayload.profileImage = profileImage;
+    }
     if (isActive !== undefined) {
       updatePayload.isActive = isActive;
     }
@@ -219,6 +241,48 @@ exports.deleteEmployee = async (req, res) => {
       message: "Employee deleted successfully"
     });
 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔥 GET IMPORT HISTORY
+exports.getImportHistory = async (req, res) => {
+  try {
+    const ImportHistory = require("../models/ImportHistory");
+    const history = await ImportHistory.find().sort({ createdAt: -1 });
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔥 DELETE IMPORT HISTORY
+exports.deleteImportHistory = async (req, res) => {
+  try {
+    const ImportHistory = require("../models/ImportHistory");
+    const record = await ImportHistory.findById(req.params.id);
+    
+    if (!record) {
+      return res.status(404).json({ error: "Record not found" });
+    }
+
+    // Try to delete physical file safely
+    if (record.fileUrl) {
+      const fs = require("fs");
+      const path = require("path");
+      
+      const fileName = record.fileUrl.split("/").pop();
+      const filePath = path.join(__dirname, "..", "uploads", fileName);
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    await ImportHistory.findByIdAndDelete(req.params.id);
+    
+    res.json({ message: "Import history removed successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

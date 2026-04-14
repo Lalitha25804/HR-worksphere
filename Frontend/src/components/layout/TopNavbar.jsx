@@ -7,6 +7,7 @@ import { logout } from "../../utils/logout";
 // APIs
 import { getEmployeesAPI } from "../../api/employeesApi";
 import { getMyNotificationsAPI, markNotificationsReadAPI } from "../../api/notificationApi";
+import { getMeAPI } from "../../api/authApi";
 
 const TopNavbar = ({ toggleSidebar }) => {
 
@@ -16,11 +17,28 @@ const TopNavbar = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [employees, setEmployees] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [profile, setProfile] = useState(null);
   
   const hasUnread = alerts.some(a => !a.isRead);
 
   // Sync Global Data
   useEffect(() => {
+     const loadProfile = async () => {
+       try {
+         const { data } = await getMeAPI();
+         setProfile(data);
+         const saved = JSON.parse(localStorage.getItem("user") || "{}");
+         localStorage.setItem("user", JSON.stringify({ ...saved, name: data.name, profileImage: data.profileImage }));
+       } catch (err) {
+         const saved = localStorage.getItem("user");
+         if (saved) {
+           setProfile(JSON.parse(saved));
+         }
+       }
+     };
+     loadProfile();
+     window.addEventListener("auth-update", loadProfile);
+
      const spinUp = async () => {
          try {
              const [eRes, nRes] = await Promise.all([
@@ -32,6 +50,8 @@ const TopNavbar = ({ toggleSidebar }) => {
          } catch(e) { console.error(e); }
      };
      spinUp();
+
+     return () => window.removeEventListener("auth-update", loadProfile);
   }, []);
 
   // Actions
@@ -134,9 +154,13 @@ const TopNavbar = ({ toggleSidebar }) => {
           onClick={() => navigate("/hr-dashboard/profile")}
           className="flex items-center gap-3 cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-full border border-white/20 bg-indigo-500/20 text-indigo-200 flex items-center justify-center font-bold">HR</div>
+          {profile?.profileImage ? (
+            <img src={`http://localhost:5000${profile.profileImage}`} className="w-9 h-9 rounded-full border border-white/20 object-cover" />
+          ) : (
+            <div className="w-9 h-9 rounded-full border border-white/20 bg-indigo-500/20 text-indigo-200 flex items-center justify-center font-bold">HR</div>
+          )}
           <div className="hidden md:block">
-            <p className="text-sm font-semibold">HR Admin</p>
+            <p className="text-sm font-semibold">{profile?.name || "HR Admin"}</p>
             <p className="text-xs text-white/50">View Profile</p>
           </div>
         </motion.div>

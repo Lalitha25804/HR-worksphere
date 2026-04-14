@@ -14,6 +14,8 @@ const LeaveRequests = () => {
   const [startDate,setStartDate] = useState("");
   const [endDate,setEndDate] = useState("");
 
+  const todayDate = new Date().toISOString().split("T")[0];
+
   useEffect(() => {
     fetchLeaves();
   }, []);
@@ -103,11 +105,13 @@ const LeaveRequests = () => {
 
         <input type="date"
           value={startDate}
+          max={todayDate}
           onChange={(e)=>setStartDate(e.target.value)}
           className="px-3 py-2 bg-slate-900 rounded"/>
 
         <input type="date"
           value={endDate}
+          max={todayDate}
           onChange={(e)=>setEndDate(e.target.value)}
           className="px-3 py-2 bg-slate-900 rounded"/>
 

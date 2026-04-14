@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 
 // APIs
 import { getMyNotificationsAPI, markNotificationsReadAPI } from "../../api/notificationApi";
+import { getMeAPI } from "../../api/authApi";
 
 const EmployeeTopNavbar = ({ toggleSidebar, open }) => {
 
@@ -21,10 +22,21 @@ const EmployeeTopNavbar = ({ toggleSidebar, open }) => {
 
   /* LOAD GLOBAL DATA */
   useEffect(() => {
-    const saved = localStorage.getItem("employeeProfile");
-    if (saved) {
-      setProfile(JSON.parse(saved));
-    }
+    const loadProfile = async () => {
+      try {
+        const { data } = await getMeAPI();
+        setProfile(data);
+        const saved = JSON.parse(localStorage.getItem("user") || "{}");
+        localStorage.setItem("user", JSON.stringify({ ...saved, name: data.name, profileImage: data.profileImage }));
+      } catch (err) {
+        const saved = localStorage.getItem("user");
+        if (saved) {
+          setProfile(JSON.parse(saved));
+        }
+      }
+    };
+    loadProfile();
+    window.addEventListener("auth-update", loadProfile);
     
     // Sync Notifications
     const fetchNotifs = async () => {
@@ -34,6 +46,8 @@ const EmployeeTopNavbar = ({ toggleSidebar, open }) => {
         } catch(e) {}
     };
     fetchNotifs();
+
+    return () => window.removeEventListener("auth-update", loadProfile);
   }, []);
 
   // Notifications API Check
@@ -146,7 +160,11 @@ const EmployeeTopNavbar = ({ toggleSidebar, open }) => {
           onClick={() => navigate("/employee-dashboard/profile")}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition cursor-pointer"
         >
-          <UserCircle size={26} className="text-white/80" />
+          {profile?.profileImage ? (
+            <img src={`http://localhost:5000${profile.profileImage}`} className="w-8 h-8 rounded-full border border-white/20 object-cover" />
+          ) : (
+            <UserCircle size={26} className="text-white/80" />
+          )}
           <div className="flex flex-col leading-tight">
             <span className="text-sm font-medium text-white/90">
               {profile?.name || "Employee"}

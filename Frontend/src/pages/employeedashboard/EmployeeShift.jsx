@@ -127,7 +127,8 @@ const EmployeeShift = () => {
              >
                 {Array.from({length: 12}, (_, i) => {
                     const m = (i + 1).toString().padStart(2, "0");
-                    return <option key={m} value={m}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+                    const isDisabled = (Number(filterYear) === currentYear && (i + 1) > currentMonth);
+                    return <option key={m} value={m} disabled={isDisabled}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
                 })}
              </select>
 

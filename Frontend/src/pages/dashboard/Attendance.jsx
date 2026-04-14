@@ -14,6 +14,9 @@ const Attendance = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const todayDate = new Date().toISOString().split("T")[0];
+  const currentMonthYear = todayDate.substring(0, 7);
+
   const formatTime = (date) => {
     if (!date) return "";
     try {
@@ -142,18 +145,21 @@ const Attendance = () => {
         <input
           type="month"
           value={month}
+          max={currentMonthYear}
           onChange={(e) => setMonth(e.target.value)}
           className="px-3 py-2 bg-white/10 border border-white/20 rounded"
         />
         <input
           type="date"
           value={startDate}
+          max={todayDate}
           onChange={(e) => setStartDate(e.target.value)}
           className="px-3 py-2 bg-white/10 border border-white/20 rounded"
         />
         <input
           type="date"
           value={endDate}
+          max={todayDate}
           onChange={(e) => setEndDate(e.target.value)}
           className="px-3 py-2 bg-white/10 border border-white/20 rounded"
         />

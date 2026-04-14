@@ -17,6 +17,8 @@ const LeaveApprovals = () => {
   // Modal State
   const [selectedEmpId, setSelectedEmpId] = useState(null);
 
+  const todayDateStr = new Date().toISOString().split("T")[0];
+
   // 🔥 Fetch Network Data Securely
   const fetchSecureData = async () => {
     try {
@@ -160,9 +162,9 @@ const LeaveApprovals = () => {
         </div>
 
         <div className="flex gap-3 items-center bg-black/30 p-2 rounded-lg border border-white/5">
-            <input type="date" value={startDate} onChange={(e)=>setStartDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm" title="Override Start Date" placeholder="Start"/>
+            <input type="date" max={todayDateStr} value={startDate} onChange={(e)=>setStartDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm" title="Override Start Date" placeholder="Start"/>
             <span className="text-white/40 px-2">-</span>
-            <input type="date" value={endDate} onChange={(e)=>setEndDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm" title="Override End Date" placeholder="End"/>
+            <input type="date" max={todayDateStr} value={endDate} onChange={(e)=>setEndDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm" title="Override End Date" placeholder="End"/>
         </div>
       </div>
 

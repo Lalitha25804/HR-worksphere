@@ -26,3 +26,14 @@ export const createEmployeeUserAPI = (userData) =>
 export const createManagerUserAPI = (userData) =>
   API.post("/auth/create-manager-user", userData);
 
+export const uploadImageAPI = (formData) =>
+  API.post("/upload", formData);
+
+export const uploadDocumentAPI = (formData) =>
+  API.post("/upload/document", formData);
+
+export const getImportHistoryAPI = () =>
+  API.get("/employees/import-history");
+
+export const deleteImportHistoryAPI = (id) =>
+  API.delete(`/employees/import-history/${id}`);

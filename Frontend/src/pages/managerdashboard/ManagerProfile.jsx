@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getMeAPI, updateProfileAPI } from "../../api/authApi";
+import { uploadImageAPI } from "../../api/employeesApi";
 
 const ManagerProfile = () => {
 
@@ -13,8 +14,10 @@ const ManagerProfile = () => {
     address: "",
     department: "",
     role: "Manager",
-    joinedDate: "2026-03-01"
+    joinedDate: "2026-03-01",
+    profileImage: ""
   });
+  const [selectedFile, setSelectedFile] = useState(null);
 
   /* LOAD FROM STORAGE OR EMPLOYEE DB */
   useEffect(() => {
@@ -28,7 +31,8 @@ const ManagerProfile = () => {
           address: data.address || "",
           department: data.dept || "",
           role: data.role || "Manager",
-          joinedDate: data.createdAt ? data.createdAt.split("T")[0] : "2026-03-01"
+          joinedDate: data.createdAt ? data.createdAt.split("T")[0] : "2026-03-01",
+          profileImage: data.profileImage || ""
         });
       } catch (err) {
         console.error("Failed to fetch Manager Profile:", err);
@@ -40,12 +44,22 @@ const ManagerProfile = () => {
   /* SAVE */
   const handleSave = async () => {
     try {
-      await updateProfileAPI({ name: profile.name, phone: profile.phone, address: profile.address });
+      let imageUrl = profile.profileImage;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("image", selectedFile);
+        const { data } = await uploadImageAPI(formData);
+        imageUrl = data.imageUrl;
+      }
+      await updateProfileAPI({ name: profile.name, phone: profile.phone, address: profile.address, profileImage: imageUrl });
       setIsEdit(false);
+      setProfile((prev) => ({ ...prev, profileImage: imageUrl }));
+      setSelectedFile(null);
       
       const user = JSON.parse(localStorage.getItem("user"));
       if (user) {
          user.name = profile.name;
+         user.profileImage = imageUrl;
          localStorage.setItem("user", JSON.stringify(user));
          window.dispatchEvent(new Event("auth-update"));
       }
@@ -61,6 +75,12 @@ const ManagerProfile = () => {
       ...profile,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
   };
 
   return (
@@ -81,12 +101,20 @@ const ManagerProfile = () => {
       >
 
         {/* Avatar */}
-        <div className="flex items-center gap-4 mb-6">
-
-          <img
-            src="https://i.pravatar.cc/80"
-            className="w-16 h-16 rounded-full border border-white/20"
-          />
+        <div className="flex items-center gap-6 mb-6">
+          <div className="relative group">
+            <img
+              src={selectedFile ? URL.createObjectURL(selectedFile) : (profile.profileImage ? `http://localhost:5000${profile.profileImage}` : `https://ui-avatars.com/api/?name=${profile.name || 'Manager'}&background=random`)}
+              className="w-20 h-20 rounded-full border-2 border-white/20 object-cover"
+              alt="Profile"
+            />
+            {isEdit && (
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-xs rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                Change
+                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+              </label>
+            )}
+          </div>
 
           <div>
             <p className="text-lg font-semibold">

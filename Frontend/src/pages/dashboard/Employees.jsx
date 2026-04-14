@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { attendanceLogs } from "../../data/attendanceLogs";
-import { getEmployeesAPI, updateEmployeeAPI } from "../../api/employeesApi";
+import { getEmployeesAPI, updateEmployeeAPI, uploadImageAPI } from "../../api/employeesApi";
 
 const Employees = () => {
 
@@ -26,18 +26,19 @@ const Employees = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({
-    name: "", email: "", dept: "", role: "Employee", baseSalary: 0, pfPercentage: 12, taxPercentage: 10, isActive: true
+    name: "", email: "", dept: "", role: "Employee", baseSalary: 0, pfPercentage: 12, taxPercentage: 10, isActive: true, managerId: "", profileImage: ""
   });
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
       const { data } = await getEmployeesAPI();
-      const withAvatars = data.map((emp, idx) => ({
+      const withAvatars = data.map((emp) => ({
         ...emp,
         id: emp._id,
         salary: emp.baseSalary,
-        avatar: `https://i.pravatar.cc/40?img=${idx % 10}`
+        avatar: emp.profileImage ? `http://localhost:5000${emp.profileImage}` : `https://ui-avatars.com/api/?name=${emp.name}&background=random`
       }));
       setEmployees(withAvatars);
       setError(null);
@@ -63,19 +64,36 @@ const Employees = () => {
       baseSalary: emp.salary, // from logic above, emp.salary is mapped to baseSalary
       pfPercentage: emp.pfPercentage || 12,
       taxPercentage: emp.taxPercentage || 10,
-      isActive: emp.isActive !== undefined ? emp.isActive : true
+      isActive: emp.isActive !== undefined ? emp.isActive : true,
+      managerId: emp.managerId?._id || emp.managerId || "",
+      profileImage: emp.profileImage || ""
     });
+    setSelectedFile(null);
     setIsEditModalOpen(true);
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateEmployeeAPI(editingId, editFormData);
+      let imageUrl = editFormData.profileImage;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("image", selectedFile);
+        const { data } = await uploadImageAPI(formData);
+        imageUrl = data.imageUrl;
+      }
+      await updateEmployeeAPI(editingId, { ...editFormData, profileImage: imageUrl });
       await fetchEmployees();
       setIsEditModalOpen(false);
+      setSelectedFile(null);
     } catch (err) {
       alert("Failed to update employee.");
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
     }
   };
 
@@ -309,13 +327,6 @@ const Employees = () => {
           className="flex-1 px-4 py-2 bg-slate-900 rounded"
         />
 
-        <input
-          type="month"
-          value={month}
-          onChange={(e)=>setMonth(e.target.value)}
-          className="px-4 py-2 bg-slate-900 rounded"
-        />
-
         <select
           value={reportType}
           onChange={(e)=>setReportType(e.target.value)}
@@ -475,6 +486,19 @@ const Employees = () => {
           <div className="bg-slate-900 border border-white/20 p-6 rounded-2xl w-full max-w-md shadow-2xl relative">
             <h3 className="text-xl font-bold mb-4 text-white">Edit Employee</h3>
             <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="flex flex-col items-center mb-4">
+                <div className="relative group">
+                  <img
+                    src={selectedFile ? URL.createObjectURL(selectedFile) : (editFormData.profileImage ? `http://localhost:5000${editFormData.profileImage}` : `https://ui-avatars.com/api/?name=${editFormData.name || 'User'}&background=random`)}
+                    className="w-16 h-16 rounded-full border border-white/20 object-cover"
+                    alt="Profile"
+                  />
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-[10px] rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                    Change
+                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                  </label>
+                </div>
+              </div>
               <div>
                 <label className="text-xs text-white/60 mb-1 block">Full Name</label>
                 <input
@@ -518,6 +542,22 @@ const Employees = () => {
                   </select>
                 </div>
               </div>
+
+              {editFormData.role === "Employee" && (
+                 <div>
+                   <label className="text-xs text-white/60 mb-1 block">Assign Reporting Manager</label>
+                   <select
+                     value={editFormData.managerId}
+                     onChange={(e) => setEditFormData({ ...editFormData, managerId: e.target.value })}
+                     className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded focus:outline-none text-white"
+                   >
+                     <option value="" className="text-black">No Manager (Unassigned)</option>
+                     {employees.filter(e => e.role === "Manager").map(mgr => (
+                        <option key={mgr.id} value={mgr.id} className="text-black">{mgr.name} ({mgr.empId})</option>
+                     ))}
+                   </select>
+                 </div>
+              )}
               <div>
                 <label className="text-xs text-white/60 mb-1 block">Base Salary (₹)</label>
                 <input

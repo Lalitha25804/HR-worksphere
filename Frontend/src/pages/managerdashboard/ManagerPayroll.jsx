@@ -241,22 +241,16 @@ const ManagerPayroll = () => {
 
         <div className="flex gap-3 items-center bg-black/30 p-2 rounded-lg border border-white/5">
             <select value={selMonth} onChange={(e)=>setSelMonth(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm text-indigo-200">
-                <option value="01">January</option>
-                <option value="02">February</option>
-                <option value="03">March</option>
-                <option value="04">April</option>
-                <option value="05">May</option>
-                <option value="06">June</option>
-                <option value="07">July</option>
-                <option value="08">August</option>
-                <option value="09">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
+                {Array.from({length: 12}, (_, i) => {
+                    const m = String(i + 1).padStart(2, '0');
+                    const isDisabled = (Number(selYear) === Number(currentYearStr) && (i + 1) > Number(currentMonthNum));
+                    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    return <option key={m} value={m} disabled={isDisabled}>{monthNames[i]}</option>;
+                })}
             </select>
             
             <select value={selYear} onChange={(e)=>setSelYear(e.target.value)} className="px-3 py-2 bg-slate-900 border border-white/20 rounded-lg text-sm text-indigo-200">
-                {[2024, 2025, 2026, 2027, 2028].map(y => <option key={y} value={String(y)}>{y}</option>)}
+                {[2024, 2025, 2026, 2027, 2028].filter(y => y <= Number(currentYearStr)).map(y => <option key={y} value={String(y)}>{y}</option>)}
             </select>
         </div>
 

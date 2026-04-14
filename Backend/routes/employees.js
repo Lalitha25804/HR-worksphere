@@ -7,7 +7,9 @@ const {
   getEmployees,
   getEmployeeById,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
+  getImportHistory,
+  deleteImportHistory
 } = require("../controllers/employeesController");
 
 const auth = require("../middleware/authMiddleware");
@@ -18,6 +20,12 @@ router.post("/", auth, role("HR"), addEmployee);
 
 // 🔥 BULK CREATE (HR only)
 router.post("/bulk", auth, role("HR"), bulkAddEmployees);
+
+// 🔥 GET IMPORT HISTORY (HR only)
+router.get("/import-history", auth, role("HR"), getImportHistory);
+
+// 🔥 DELETE IMPORT HISTORY (HR only)
+router.delete("/import-history/:id", auth, role("HR"), deleteImportHistory);
 
 // 🔥 READ ALL (HR + Manager)
 router.get("/", auth, role("HR", "Manager"), getEmployees);

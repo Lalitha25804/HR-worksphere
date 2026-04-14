@@ -41,6 +41,7 @@ const employeeSchema = new mongoose.Schema({
   },
   phone: { type: String, default: "" },
   address: { type: String, default: "" },
+  profileImage: { type: String, default: "" },
   isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 

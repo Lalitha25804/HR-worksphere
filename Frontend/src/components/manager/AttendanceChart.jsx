@@ -94,7 +94,7 @@ const AttendanceChart = () => {
         </div>
       )}
 
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={250} minWidth={10} minHeight={250}>
 
         <BarChart data={chartData}>
 

@@ -190,7 +190,7 @@ exports.getMe = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const Employee = require("../models/Employee");
-    const { name, phone, address } = req.body;
+    const { name, phone, address, profileImage } = req.body;
 
     // Reject entirely blank names to prevent rendering glitches
     if (!name || name.trim() === "") {
@@ -200,7 +200,7 @@ exports.updateProfile = async (req, res) => {
     if (req.user.role === "HR") {
       const updatedUser = await User.findByIdAndUpdate(
         req.user.id,
-        { name, phone, address },
+        { name, phone, address, profileImage },
         { new: true }
       ).select("-password");
       return res.json(updatedUser);
@@ -209,7 +209,7 @@ exports.updateProfile = async (req, res) => {
       // 1. Update primary HR Employee Document
       const updatedEmp = await Employee.findByIdAndUpdate(
         req.user.id,
-        { name, phone, address },
+        { name, phone, address, profileImage },
         { new: true }
       );
 

@@ -2,6 +2,7 @@ const Attendance = require("../models/Attendance");
 const Leave = require("../models/Leave");
 const Employee = require("../models/Employee");
 const Settings = require("../models/Settings");
+const Payroll = require("../models/Payroll");
 
 // 🔥 GET PAYROLL
 exports.getPayroll = async (req, res) => {
@@ -22,6 +23,12 @@ exports.getPayroll = async (req, res) => {
     // Role Mapping Verification Block
     if (req.user.role !== "HR" && req.user.role !== "Manager" && req.user.id !== employeeId) {
        return res.status(403).json({ error: "Access Denied: You cannot view foreign financial records." });
+    }
+
+    // 🔥 CHECK DB FIRST
+    const existingPayroll = await Payroll.findOne({ employeeId, month, year });
+    if (existingPayroll) {
+       return res.json(existingPayroll);
     }
 
     const m = parseInt(month) - 1;
@@ -143,9 +150,34 @@ exports.getPayroll = async (req, res) => {
       pfAmount: parseFloat(pfAmount.toFixed(2)),
       taxAmount: parseFloat(taxAmount.toFixed(2)),
       salary: netSalary,
-      workedShifts
+      workedShifts,
+      status: "Pending"
     });
 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔥 PROCESS PAYROLL
+exports.processPayroll = async (req, res) => {
+  try {
+    const { payrolls } = req.body;
+    
+    if (!payrolls || !Array.isArray(payrolls)) {
+      return res.status(400).json({ error: "Invalid payload format. Expected an array of payrolls." });
+    }
+
+    for (let p of payrolls) {
+       p.status = "Processed";
+       await Payroll.findOneAndUpdate(
+         { employeeId: p.employeeId, month: p.month, year: p.year },
+         p,
+         { upsert: true, returnDocument: "after" }
+       );
+    }
+
+    res.json({ message: "Payroll processing complete." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

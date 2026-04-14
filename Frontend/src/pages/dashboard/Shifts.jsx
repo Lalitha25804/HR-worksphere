@@ -180,16 +180,22 @@ const Shifts = () => {
         <div>
           <label className="text-sm text-white/60 block mb-1">Month</label>
           <select value={month} onChange={(e) => setMonth(e.target.value)} className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg outline-none min-w-[120px]">
-            {Array.from({length: 12}, (_, i) => (
-              <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
-            ))}
+            {Array.from({length: 12}, (_, i) => {
+              const m = i + 1;
+              const isDisabled = Number(year) === currentYear && m > currentMonth;
+              return (
+                <option key={m} value={m} disabled={isDisabled}>
+                  {new Date(0, i).toLocaleString('default', { month: 'long' })}
+                </option>
+              );
+            })}
           </select>
         </div>
         
         <div>
           <label className="text-sm text-white/60 block mb-1">Year</label>
           <select value={year} onChange={(e) => setYear(e.target.value)} className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg outline-none min-w-[100px]">
-            {[2024, 2025, 2026, 2027].map(y => (
+            {[2024, 2025, 2026, 2027].filter(y => y <= currentYear).map(y => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>

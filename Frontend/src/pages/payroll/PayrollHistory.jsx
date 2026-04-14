@@ -162,7 +162,8 @@ const PayrollHistory = () => {
           <label className="text-sm text-white/60 block mb-1">Month Selected</label>
           <input 
             type="month" 
-            value={monthFilter} 
+            value={monthFilter}
+            max={defaultMonth}
             onChange={(e) => setMonthFilter(e.target.value)} 
             className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg outline-none"
           />
